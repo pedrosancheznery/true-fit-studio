@@ -20,7 +20,7 @@ export default function Home() {
     let mounted = true;
     setLoading(true);
     supabase
-      .from<ClassRow>("classes")
+      .from("classes")
       .select("*")
       .order("start_ts", { ascending: true })
       .then((res) => {
