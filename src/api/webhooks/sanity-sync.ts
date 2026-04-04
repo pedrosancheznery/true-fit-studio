@@ -1,36 +1,31 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { createClient } from '@supabase/supabase-js'
+import { isValidSignature, SIGNATURE_HEADER_NAME } from '@sanity/webhook';
+import { supabaseAdmin } from '@/lib/serverSupabase';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-// Use Service Role Key to bypass RLS for administrative sync
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! 
-)
+const secret = process.env.SANITY_WEBHOOK_SECRET;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' })
+  // 1. Verify Signature
+  const signature = req.headers[SIGNATURE_HEADER_NAME] as string;
+  const body = await readBody(req); // Helper to get raw body for verification
+
+  if (!isValidSignature(body, signature, secret)) {
+    return res.status(401).json({ message: 'Invalid signature' });
   }
 
-  try {
-    const { _id, title, description, instructor, startTime, duration, capacity } = req.body
+  const jsonBody = JSON.parse(body);
+  const { _id, title, price, description } = jsonBody;
 
-    const { data, error } = await supabaseAdmin
-      .from('classes')
-      .upsert({
-        sanity_id: _id,
-        title: title,
-        description: description,
-        instructor: instructor,
-        start_time: startTime,
-        duration_minutes: duration,
-        capacity: capacity,
-      }, { onConflict: 'sanity_id' })
+  // 2. Sync to Supabase
+  const { error } = await supabaseAdmin
+    .from('classes')
+    .upsert({ 
+      id: _id, 
+      name: title, 
+      price_cents: price * 100, 
+      description 
+    });
 
-    if (error) throw error
-
-    return res.status(200).json({ message: 'Sync successful', data })
-  } catch (err: any) {
-    return res.status(500).json({ message: err.message })
-  }
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(200).json({ message: 'Synced successfully' });
 }

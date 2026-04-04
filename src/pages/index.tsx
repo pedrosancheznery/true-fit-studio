@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import NavHeader from "@/components/NavHeader";
 import { supabase } from "@/lib/supabaseClient";
+import type { GetServerSideProps } from 'next';
 
 type ClassRow = {
   id: string;
@@ -97,3 +98,23 @@ export default function Home() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  try {
+    const { supabaseAdmin } = await import('../lib/serverSupabase'); // use your tsconfig paths or adjust to ../lib/serverSupabase
+    const { data, error } = await supabaseAdmin
+      .from('classes')
+      .select('*')
+      .order('start_ts', { ascending: true });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return { props: { classes: [] } };
+    }
+
+    return { props: { classes: data ?? [] } };
+  } catch (err) {
+    console.error(err);
+    return { props: { classes: [] } };
+  }
+};

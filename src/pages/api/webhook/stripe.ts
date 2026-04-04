@@ -1,11 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/serverSupabase";
 
 export const config = { api: { bodyParser: false } };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2022-11-15" });
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 import getRawBody from "raw-body";
 
@@ -29,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (classId && userId) {
       // insert booking row (adjust column names)
-      const { error } = await supabase.from("bookings").insert([{
+      const { error } = await supabaseAdmin.from("bookings").insert([{
         class_id: classId,
         user_id: userId,
         stripe_payment_intent: paymentIntent,

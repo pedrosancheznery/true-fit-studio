@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from "@/lib/supabaseClient";
 import ClassCard from '../components/ClassCard';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export async function getServerSideProps() {
   const { data: classes } = await supabase
