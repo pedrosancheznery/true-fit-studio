@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import MemberGuard from '../../components/MemberGuard';
 
 export default function BookPage() {
   const r = useRouter();
@@ -34,11 +35,13 @@ export default function BookPage() {
 
   if (!cls) return <div>Loading class...</div>;
   return (
+    <MemberGuard>
     <main style={{ padding: 20 }}>
       <h1>{cls.title}</h1>
       <p>{cls.description}</p>
       <button onClick={handleBook}>Book class{cls.price ? ` — $${cls.price}` : ''}</button>
       <div>{msg}</div>
     </main>
+  </MemberGuard>
   );
 }
