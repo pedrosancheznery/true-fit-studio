@@ -32,7 +32,14 @@ export default function Home() {
           setClasses(res.data ?? []);
         }
       })
-      .finally(() => mounted && setLoading(false));
+      // Replace the .finally() block with this structure:
+      .then(() => {
+        if (mounted) setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (mounted) setLoading(false);
+      });
     return () => {
       mounted = false;
     };
