@@ -1,5 +1,5 @@
-//import { createClient } from 'next-sanity'
-import { supabase } from "../../src/lib/supabaseClient";
+import { createClient } from 'next-sanity'
+//import { supabase } from "@/lib/supabaseClient";
 
 import { apiVersion, dataset, projectId } from '../env'
 
