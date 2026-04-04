@@ -2,6 +2,7 @@ import { isValidSignature, SIGNATURE_HEADER_NAME } from '@sanity/webhook';
 import { supabaseAdmin } from '@/lib/serverSupabase';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+const signature = req.headers['x-sanity-signature'] as string;
 const secret = process.env.SANITY_WEBHOOK_SECRET;
 
 async function readBody(readable: any) {
@@ -16,6 +17,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // 1. Verify Signature
   const signature = req.headers[SIGNATURE_HEADER_NAME] as string;
   const body = await readBody(req); // Helper to get raw body for verification
+
+  if (!signature || !secret) {
+    return res.status(401).json({ message: 'Missing signature or secret' });
+  }
 
   if (!isValidSignature(body, signature, secret)) {
     return res.status(401).json({ message: 'Invalid signature' });
