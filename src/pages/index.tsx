@@ -18,28 +18,28 @@ export default function Home() {
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
-    supabase
-      .from("classes")
-      .select("*")
-      .order("start_ts", { ascending: true })
-      .then((res) => {
-        if (!mounted) return;
-        if (res.error) {
-          console.error(res.error);
-          setError(res.error.message);
-        } else {
-          setClasses(res.data ?? []);
+
+    const fetchClasses = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase.from("classes").select("*");
+        
+        if (error) throw error;
+
+        if (mounted) {
+          setClasses(data || []);
         }
-      })
-      // Replace the .finally() block with this structure:
-      .then(() => {
-        if (mounted) setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error(err);
-        if (mounted) setLoading(false);
-      });
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchClasses();
+
     return () => {
       mounted = false;
     };
