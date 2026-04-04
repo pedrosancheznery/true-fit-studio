@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!cls) return res.status(404).json({ error: 'Class not found' });
 
   const { count } = await supabaseAdmin.from('bookings').select('*', { count: 'exact' }).eq('class_id', classId).eq('status', 'booked');
-  if (cls.capacity && count >= cls.capacity) return res.status(409).json({ error: 'Class full' });
+  if (cls.capacity && count != null && count >= cls.capacity) return res.status(409).json({ error: 'Class full' });
 
   // Insert booking
   const { data: booking } = await supabaseAdmin.from('bookings').insert({
@@ -48,3 +48,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.json({ success: true });
   }
 }
+
+// PSN

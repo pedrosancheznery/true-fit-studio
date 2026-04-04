@@ -19,17 +19,6 @@ export async function getServerSideProps() {
   };
 }
 
-async function handleBookNow(classId: string, priceId: string) {
-  // require authenticated user; get user.id from Supabase client
-  const resp = await fetch("/api/create-checkout-session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ classId, priceId, userId: user.id }),
-  });
-  const { url } = await resp.json();
-  window.location.href = url;
-}
-
 export default function ClassGallery({ classes }: { classes: any[] }) {
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
