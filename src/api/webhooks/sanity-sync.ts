@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+export { config, default } from '@/pages/api/webhooks/sanity-sync';
+=======
 import { isValidSignature, SIGNATURE_HEADER_NAME } from '@sanity/webhook';
 import { supabaseAdmin } from '@/lib/serverSupabase';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -42,3 +45,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (error) return res.status(500).json({ error: error.message });
   return res.status(200).json({ message: 'Synced successfully' });
 }
+>>>>>>> dev

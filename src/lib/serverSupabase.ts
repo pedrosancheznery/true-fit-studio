@@ -1,6 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl) {
+  throw new Error('Missing Supabase URL for server-side client.');
+}
+
+if (!supabaseServiceRoleKey) {
+  throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY for server-side client.');
+}
+
 export const supabaseAdmin = createClient(
+<<<<<<< HEAD
+  supabaseUrl,
+  supabaseServiceRoleKey,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+=======
   process.env.SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+>>>>>>> dev
 );

@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  return res.status(410).json({
+    error: 'Stripe webhook handling is temporarily disabled. The booking flow now uses simulated payments.',
+  });
+=======
 import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/serverSupabase";
@@ -35,4 +43,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   res.status(200).json({ received: true });
+>>>>>>> dev
 }

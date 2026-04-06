@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
+import { supabase } from '@lib/supabaseClient'
+=======
 import { supabase } from "@/lib/supabaseClient";
+>>>>>>> dev
 
 export default function NavHeader() {
   const router = useRouter();
@@ -17,7 +21,10 @@ export default function NavHeader() {
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) setUser({ id: session.user.id, email: session.user.email || undefined });
+      if (session?.user) {
+        setUser({ id: session.user.id, email: session.user.email || undefined });
+        console.log(session.user.id)
+      }
       else setUser(null);
     });
 
