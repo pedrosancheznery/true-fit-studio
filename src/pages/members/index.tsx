@@ -2,8 +2,17 @@ import MemberGuard from '@/components/MemberGuard';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
+type MemberBooking = {
+  id: string;
+  status: string;
+  paid: boolean;
+  classes?: {
+    title?: string | null;
+  } | null;
+};
+
 export default function Members() {
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<MemberBooking[]>([]);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
