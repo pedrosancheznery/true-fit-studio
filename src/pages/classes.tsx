@@ -1,9 +1,14 @@
+<<<<<<< HEAD
 import type { GetServerSideProps } from 'next';
+=======
+import { supabase } from "@/lib/supabaseClient";
+>>>>>>> dev
 import ClassCard from '../components/ClassCard';
 import NavHeader from '@/components/NavHeader';
 import { supabaseAdmin } from '@/lib/serverSupabase';
 import { getSSRClient } from '@/lib/ssrClient';
 
+<<<<<<< HEAD
 type ClassRow = {
   id: string;
   title?: string | null;
@@ -123,6 +128,13 @@ export const getServerSideProps: GetServerSideProps<ClassGalleryProps> = async (
       isBooked: bookedClassIds.has(item.id),
     }))
     .sort(compareClasses);
+=======
+export async function getServerSideProps() {
+  const { data: classes } = await supabase
+    .from('classes')
+    .select('*')
+    .order('start_ts', { ascending: true });
+>>>>>>> dev
 
   return {
     props: {

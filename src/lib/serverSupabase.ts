@@ -12,6 +12,7 @@ if (!supabaseServiceRoleKey) {
 }
 
 export const supabaseAdmin = createClient(
+<<<<<<< HEAD
   supabaseUrl,
   supabaseServiceRoleKey,
   {
@@ -20,4 +21,8 @@ export const supabaseAdmin = createClient(
       persistSession: false,
     },
   }
+=======
+  process.env.SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+>>>>>>> dev
 );

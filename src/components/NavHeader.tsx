@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { supabase } from '@lib/supabaseClient'
+=======
+import { supabase } from "@/lib/supabaseClient";
+>>>>>>> dev
 
 export default function NavHeader() {
   const router = useRouter();
