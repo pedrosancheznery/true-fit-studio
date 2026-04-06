@@ -97,6 +97,8 @@ export const getServerSideProps: GetServerSideProps<ClassDetailsProps> = async (
 };
 
 export default function ClassDetails({ workoutClass, upcomingInstances }: ClassDetailsProps) {
+  const classStartTime = workoutClass.startTime ?? workoutClass.start_time ?? 'Time TBD';
+
   const handleBooking = async (instanceId: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -164,7 +166,7 @@ export default function ClassDetails({ workoutClass, upcomingInstances }: ClassD
                     {isBooked ? 'Booked' : isFull ? 'Sold Out' : `${instance.seatsRemaining} spots left`}
                   </span>
                 </div>
-                <span>{workoutClass.startTime ?? workoutClass.start_time ?? 'Time TBD'}</span>
+                <span>{classStartTime}</span>
               </button>
             );
           })}
