@@ -4,7 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     // 1. Attempt to fetch a row count from your 'classes' table
-    const { data, error, count } = await supabaseAdmin
+    const { error, count } = await supabaseAdmin
       .from('classes')
       .select('*', { count: 'exact', head: true });
 
@@ -22,11 +22,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       message: 'Supabase Admin is connected and bypasses RLS.',
       rowCount: count
     });
-  } catch (err: any) {
+  } catch (error) {
     return res.status(500).json({ 
       success: false, 
       message: 'Server-side crash', 
-      error: err.message 
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }
