@@ -146,11 +146,12 @@ export const getServerSideProps: GetServerSideProps<AdminPageProps> = async (ctx
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('*, roles(name)')
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'admin') {
+  if (profile?.roles?.name !== 'admin') {
+    console.log(profile.roles.name);
     return {
       redirect: {
         destination: '/members/my-bookings',

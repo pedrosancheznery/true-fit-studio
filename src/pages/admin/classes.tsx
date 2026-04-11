@@ -25,7 +25,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     .single();
   
   // Use optional chaining and index [0] to access the first role
-  const isAdmin = (profile?.roles as any)?.[0]?.name === 'admin';
+  const isAdmin = (profile?.roles as any)?.name === 'admin';
   //const isAdmin = profile?.roles?.name === 'admin'; // Or 'role_name' if column differs
   if (!isAdmin) return { redirect: { destination: '/', permanent: false } };
 
