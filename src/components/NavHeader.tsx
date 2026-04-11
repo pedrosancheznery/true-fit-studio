@@ -7,14 +7,28 @@ export default function NavHeader() {
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [open, setOpen] = useState(false);
+  const [role, setRole] = useState<{ name?: string } | null>(null);
+  const [isAdmin, setAdmin] = useState(false);
 
   useEffect(() => {
     Promise.resolve(supabase.auth.getSession?.()).then(({ data }) => {
       const u = data.session?.user;
       if (u) {
         setUser({ id: u.id, email: (u.email as string) || undefined });
+        getRole(u);
       }
     });
+
+    // New: Join profiles with roles via role_id FK to check role name
+    const getRole = async(user: object) => {
+      const fetchedRole = await supabase.from('profiles')
+      .select('roles(name)') // Assumes 'roles' table has 'name' column
+      .eq('id', user.id)
+      .single();
+
+      setRole(fetchedRole.data.roles.name);
+      if (fetchedRole.data.roles.name == "admin" ) setAdmin(true);
+    }
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
@@ -45,6 +59,12 @@ export default function NavHeader() {
             <nav className="hidden sm:flex space-x-1">
               <Link href="/classes" className={linkClass("/classes")}>Gallery</Link>
               <Link href="/members/my-bookings" className={linkClass("/members/my-bookings")}>My Bookings</Link>
+              {user && (
+                <Link href="/members/profile" className={linkClass("/members/profile")}>My Profile</Link>
+              )}
+              {isAdmin && (
+                <Link href="/admin/classes" className={linkClass("/admin/classes")}>Admin Classes</Link>
+              )}
             </nav>
           </div>
 
