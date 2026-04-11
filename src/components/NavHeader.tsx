@@ -7,24 +7,59 @@ export default function NavHeader() {
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [open, setOpen] = useState(false);
+  const [role, setRole] = useState<{ name?: string } | null>(null);
+  const [isAdmin, setAdmin] = useState(false);
 
   useEffect(() => {
-    Promise.resolve(supabase.auth.getSession?.()).then(({ data }) => {
-      const u = data.session?.user;
-      if (u) {
-        setUser({ id: u.id, email: (u.email as string) || undefined });
+    // 1. Handle the initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({ 
+          id: session.user.id, 
+          email: session.user.email || undefined 
+        });
       }
     });
 
+    // 2. Handle auth changes (login/logout)
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setUser({ id: session.user.id, email: session.user.email || undefined });
+        setUser({ 
+          id: session.user.id, 
+          email: session.user.email || undefined 
+        });
+      } else {
+        setUser(null);
+        setRole(null); // Clear role on logout
+        setAdmin(false);
       }
-      else setUser(null);
     });
 
-    return () => listener?.subscription?.unsubscribe?.();
+    return () => listener?.subscription?.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      // Only fetch if we have a user and don't have a role yet
+      if (!user?.id) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('roles(name)')
+        .eq('id', user.id)
+        .single();
+
+      // The 'any' cast here helps if your Supabase types aren't fully generated
+      const profileData = data as any; 
+
+      if (profileData?.roles?.name) {
+        setRole(profileData.roles.name);
+        setAdmin(profileData.roles.name === "admin");
+      }
+    };
+
+    getProfile();
+  }, [user]); // This triggers automatically as soon as setUser is called above
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -45,6 +80,12 @@ export default function NavHeader() {
             <nav className="hidden sm:flex space-x-1">
               <Link href="/classes" className={linkClass("/classes")}>Gallery</Link>
               <Link href="/members/my-bookings" className={linkClass("/members/my-bookings")}>My Bookings</Link>
+              {user && (
+                <Link href="/members/profile" className={linkClass("/members/profile")}>My Profile</Link>
+              )}
+              {isAdmin && (
+                <Link href="/admin/classes" className={linkClass("/admin/classes")}>Admin Classes</Link>
+              )}
             </nav>
           </div>
 

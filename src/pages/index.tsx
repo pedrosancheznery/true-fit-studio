@@ -14,6 +14,7 @@ type ClassRow = {
   location?: string | null;
   duration?: number | null;
   startTime?: string | null;
+  day_of_week?: string | null;
 };
 
 type InstructorRow = {
@@ -25,6 +26,19 @@ type InstructorRow = {
 
 type HomeProps = {
   instructors: InstructorRow[];
+};
+
+const getDayName = (dayValue: string) => {
+  const days: Record<string, string> = {
+    '0': 'Saturday',
+    '1': 'Sunday',
+    '2': 'Monday',
+    '3': 'Tuesday',
+    '4': 'Wednesday',
+    '5': 'Thursday',
+    '6': 'Friday',
+  };
+  return days[dayValue] || 'TBA';
 };
 
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
@@ -82,35 +96,48 @@ export default function Home({ instructors }: HomeProps) {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-            True Fitness By Susana
+            True Fit By Susana
           </h1>
           <p className="mt-4 text-lg text-slate-600">
             Browse upcoming classes and manage your bookings.
           </p>
         </header>
 
-        <section className="mb-20">
+        <section className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2">
           <h2 className="text-xl font-medium mb-3">Upcoming classes</h2>
           {loading && <p className="text-sm text-slate-500">Loading classes…</p>}
           {!loading && classes.length === 0 && <p className="text-sm text-slate-500">No upcoming classes.</p>}
-
-          <ul className="space-y-4">
-            {classes.map((c) => (
-              <li key={c.id} className="p-4 border rounded-md flex justify-between items-center">
+        </section>
+        <section className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2">
+          {classes.map((c) => (
+          <div key={c.id} 
+            className='overflow-hidden rounded-xl border border-slate-200 shadow-sm transition bg-slate-100 text-slate-500 opacity-80'>
+            <div className="p-6">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className='rounded-full px-3 py-1 text-xs font-semibold bg-slate-200 text-slate-600'>
+                    {c.duration ? `${c.duration} mins` : 'Duration TBD'}
+                  </span>
+                </div>
+              </div>
+              <h3 className='mb-2 text-xl font-bold text-slate-900'>
+                {c.title}
+              </h3>
+              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
                 <div>
-                  <div className="font-medium text-slate-800">{c.title}</div>
-                  <div className="text-sm text-slate-600">
-                    {c.startTime} {c.duration ? ` • ${c.duration}` : ""}
-                  </div>
+                  <p className='text-sm font-bold text-slate-900'>
+                    {getDayName(c?.day_of_week || "0" )} @ {c.startTime}
+                  </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Link href={`/classes/${c.id}`} className="text-sm text-slate-700 underline">
-                    Details
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
+                <Link
+                  href={`/classes/${c.id}`}
+                  className='rounded-lg px-4 py-2 text-sm font-semibold transition bg-slate-900 text-white hover:bg-slate-800'>
+                  Details
+                </Link>
+              </div>
+            </div>
+          </div>
+          ))}
         </section>
 
         <InstructorsSection instructors={instructors} />
