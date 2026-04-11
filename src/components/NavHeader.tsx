@@ -23,7 +23,7 @@ export default function NavHeader() {
     const getRole = async(user: object) => {
       const fetchedRole = await supabase.from('profiles')
       .select('roles(name)') // Assumes 'roles' table has 'name' column
-      .eq('id', user.id)
+      .eq('id', (user as any).id)
       .single();
 
       setRole(fetchedRole.data.roles.name);
