@@ -11,34 +11,55 @@ export default function NavHeader() {
   const [isAdmin, setAdmin] = useState(false);
 
   useEffect(() => {
-    Promise.resolve(supabase.auth.getSession?.()).then(({ data }) => {
-      const u = data.session?.user;
-      if (u) {
-        setUser({ id: u.id, email: (u.email as string) || undefined });
-        getRole(u);
+    // 1. Handle the initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({ 
+          id: session.user.id, 
+          email: session.user.email || undefined 
+        });
       }
     });
 
-    // New: Join profiles with roles via role_id FK to check role name
-    const getRole = async(user: object) => {
-      const fetchedRole = await supabase.from('profiles')
-      .select('roles(name)') // Assumes 'roles' table has 'name' column
-      .eq('id', (user as any).id)
-      .single();
-
-      setRole(fetchedRole.data.roles.name);
-      if (fetchedRole.data.roles.name == "admin" ) setAdmin(true);
-    }
-
+    // 2. Handle auth changes (login/logout)
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setUser({ id: session.user.id, email: session.user.email || undefined });
+        setUser({ 
+          id: session.user.id, 
+          email: session.user.email || undefined 
+        });
+      } else {
+        setUser(null);
+        setRole(null); // Clear role on logout
+        setAdmin(false);
       }
-      else setUser(null);
     });
 
-    return () => listener?.subscription?.unsubscribe?.();
+    return () => listener?.subscription?.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      // Only fetch if we have a user and don't have a role yet
+      if (!user?.id) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('roles(name)')
+        .eq('id', user.id)
+        .single();
+
+      // The 'any' cast here helps if your Supabase types aren't fully generated
+      const profileData = data as any; 
+
+      if (profileData?.roles?.name) {
+        setRole(profileData.roles.name);
+        setAdmin(profileData.roles.name === "admin");
+      }
+    };
+
+    getProfile();
+  }, [user]); // This triggers automatically as soon as setUser is called above
 
   async function handleLogout() {
     await supabase.auth.signOut();

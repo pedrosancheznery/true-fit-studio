@@ -14,6 +14,7 @@ type ClassRow = {
   location?: string | null;
   duration?: number | null;
   startTime?: string | null;
+  day_of_week?: string | null;
 };
 
 type InstructorRow = {
@@ -125,7 +126,7 @@ export default function Home({ instructors }: HomeProps) {
               <div className="flex items-center justify-between border-t border-slate-100 pt-4">
                 <div>
                   <p className='text-sm font-bold text-slate-900'>
-                    {getDayName(c.day_of_week)} @ {c.startTime}
+                    {getDayName(c?.day_of_week || "0" )} @ {c.startTime}
                   </p>
                 </div>
                 <Link
