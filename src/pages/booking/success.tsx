@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/serverSupabase';
 import { supabase } from '@/lib/supabaseClient';
 import NavHeader from '@/components/NavHeader';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 type BookingSuccessProps = {
   booking: {
@@ -10,6 +11,7 @@ type BookingSuccessProps = {
     status: string;
     paid: boolean;
     class_instances: {
+      id: string;  // <-- Add this line
       date: string;
       classes: {
         title?: string | null;
@@ -36,6 +38,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       status,
       paid,
       class_instances (
+        id,  // <-- Add this for instance ID
         date,
         classes (*)
       )
@@ -70,6 +73,32 @@ export default function BookingSuccess({ booking }: BookingSuccessProps) {
     );
   }
 
+  // Trigger email confirmation on page load (after successful booking)
+  useEffect(() => {
+    const sendConfirmationEmail = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.email || !booking?.class_instances) return; // Skip if no session/email or booking not loaded
+
+      const instanceId = booking.class_instances.id; // Assuming class_instances has id (add if missing in select)
+      try {
+        await fetch('/api/bookings/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            instanceId,
+            to: encodeURIComponent(session.user.email),
+          }),
+        });
+        console.log('Confirmation email sent successfully'); // Optional: Hide in production
+      } catch (err) {
+        console.error('Failed to send confirmation email:', err);
+        // Optional: Alert user or retry later
+      }
+    };
+
+    sendConfirmationEmail();
+  }, [booking]); // Runs once per booking load
+
   const handleCancel = async () => {
     if (!confirm('Cancel this booking and simulate the refund?')) {
       return;
@@ -92,6 +121,25 @@ export default function BookingSuccess({ booking }: BookingSuccessProps) {
 
     if (res.ok) {
       alert('Booking cancelled. Refund simulation complete.');
+      
+      // Send cancellation notification email (after successful cancel)
+      if (booking?.class_instances && session?.user?.email) {  // Compound check: booking data AND user email
+        const email = session.user.email; // Type-guarded now
+        try {
+          await fetch('/api/bookings/cancelled', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId: booking.id,
+              to: encodeURIComponent(email),  // Safe string now
+            }),
+          });
+          console.log('Cancellation email sent successfully');
+        } catch (err) {
+          console.error('Failed to send cancellation email:', err);
+        }
+      }
+      
       window.location.reload();
     } else {
       const { error } = await res.json().catch(() => ({ error: null }));
