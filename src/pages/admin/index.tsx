@@ -529,7 +529,7 @@ export default function AdminDashboard({
                 Admin
               </p>
               <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">
-                Studio Control Panel
+                Control Panel
               </h1>
               <p className="mt-3 max-w-3xl text-base text-slate-600">
                 Create instructors, publish bookable classes with weekly sessions, and track
@@ -559,109 +559,50 @@ export default function AdminDashboard({
             <MetricCard label="Booked Seats" value={String(totalActiveBookings)} />
           </section>
 
-          <section className="mt-8 grid gap-6 xl:grid-cols-2">
+          <section id="classesSection" className="mt-8 grid gap-6 hidden">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="mb-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
-                  {isEditingInstructor ? 'Edit Instructor' : 'Add Instructor'}
-                </p>
-                <h2 className="mt-2 text-2xl font-bold text-slate-900">
-                  {isEditingInstructor ? 'Update coach profile' : 'Create a new coach profile'}
-                </h2>
-              </div>
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Class Catalog
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-slate-900">Current classes</h2>
 
-              <form className="space-y-4" onSubmit={handleSaveInstructor}>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="instructor-name">
-                    Name
-                  </label>
-                  <input
-                    id="instructor-name"
-                    value={instructorForm.name}
-                    onChange={(event) => {
-                      const value = event.currentTarget.value;
-                      setInstructorForm((current) => ({
-                        ...current,
-                        name: value,
-                      }));
-                    }}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-500"
-                    placeholder="Susana Ortega"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="instructor-bio">
-                    Bio
-                  </label>
-                  <textarea
-                    id="instructor-bio"
-                    value={instructorForm.bio}
-                    onChange={(event) => {
-                      const value = event.currentTarget.value;
-                      setInstructorForm((current) => ({
-                        ...current,
-                        bio: value,
-                      }));
-                    }}
-                    className="min-h-32 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-500"
-                    placeholder="Short instructor intro, specialties, and training style."
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="instructor-image">
-                    Photo
-                  </label>
-                  <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center">
-                    <img
-                      src={instructorForm.imagePreviewUrl || '/placeholder-avatar.png'}
-                      alt={instructorForm.name || 'Instructor preview'}
-                      className="h-24 w-24 rounded-2xl object-cover shadow-sm"
-                    />
-                    <div className="flex-1">
-                      <input
-                        id="instructor-image"
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp,image/gif"
-                        onChange={handleInstructorImageChange}
-                        className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-xl file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-slate-800"
-                      />
-                      <p className="mt-2 text-xs text-slate-500">
-                        Upload JPG, PNG, WEBP, or GIF. The newest uploaded photo becomes the instructor profile image.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <FeedbackMessage feedback={instructorFeedback} />
-
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="submit"
-                    disabled={isSavingInstructor}
-                    className="inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isSavingInstructor
-                      ? isEditingInstructor
-                        ? 'Saving Changes…'
-                        : 'Saving Instructor…'
-                      : isEditingInstructor
-                        ? 'Save Instructor Changes'
-                        : 'Create Instructor'}
-                  </button>
-                  {isEditingInstructor && (
-                    <button
-                      type="button"
-                      onClick={cancelInstructorEdit}
-                      className="inline-flex rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              {classes.length > 0 ? (
+                <ul className="mt-5 space-y-3">
+                  {classes.map((workoutClass) => (
+                    <li
+                      key={workoutClass.id}
+                      className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
                     >
-                      Cancel Edit
-                    </button>
-                  )}
-                </div>
-              </form>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="font-semibold text-slate-900">{workoutClass.title}</div>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {instructorNameById.get(workoutClass.instructor_id ?? '') ??
+                              'Unassigned'}{' '}
+                            · {formatStudioDayLabel(workoutClass.day_of_week)} ·{' '}
+                            {workoutClass.startTime ?? 'Time TBD'}
+                          </p>
+                        </div>
+                        <StatusPill
+                          tone="neutral"
+                          label={`${sessionsPerClass.get(workoutClass.id) ?? 0} sessions`}
+                        />
+                      </div>
+                      <div className="mt-3 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => startClassEdit(workoutClass)}
+                          className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-5 text-sm text-slate-500">No classes created yet.</p>
+              )}
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -935,7 +876,158 @@ export default function AdminDashboard({
             </div>
           </section>
 
-          <section className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section id="instructorsSection" className="mt-8 grid gap-6 xl:grid-cols-2 hidden">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Instructor Roster
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-slate-900">Current instructors</h2>
+
+              {instructors.length > 0 ? (
+                <ul className="mt-5 space-y-3">
+                  {instructors.map((instructor) => (
+                    <li
+                      key={instructor.id}
+                      className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-start gap-4">
+                            <img
+                              src={instructor.imageUrl || '/placeholder-avatar.png'}
+                              alt={instructor.name}
+                              className="h-16 w-16 rounded-2xl object-cover shadow-sm"
+                            />
+                            <div>
+                              <div className="font-semibold text-slate-900">{instructor.name}</div>
+                              <p className="mt-1 text-sm text-slate-500">
+                                {instructor.bio || 'No bio added yet.'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => startInstructorEdit(instructor)}
+                          className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-5 text-sm text-slate-500">No instructors added yet.</p>
+              )}
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
+                  {isEditingInstructor ? 'Edit Instructor' : 'Add Instructor'}
+                </p>
+                <h2 className="mt-2 text-2xl font-bold text-slate-900">
+                  {isEditingInstructor ? 'Update coach profile' : 'Create a new coach profile'}
+                </h2>
+              </div>
+
+              <form className="space-y-4" onSubmit={handleSaveInstructor}>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="instructor-name">
+                    Name
+                  </label>
+                  <input
+                    id="instructor-name"
+                    value={instructorForm.name}
+                    onChange={(event) => {
+                      const value = event.currentTarget.value;
+                      setInstructorForm((current) => ({
+                        ...current,
+                        name: value,
+                      }));
+                    }}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-500"
+                    placeholder="Susana Ortega"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="instructor-bio">
+                    Bio
+                  </label>
+                  <textarea
+                    id="instructor-bio"
+                    value={instructorForm.bio}
+                    onChange={(event) => {
+                      const value = event.currentTarget.value;
+                      setInstructorForm((current) => ({
+                        ...current,
+                        bio: value,
+                      }));
+                    }}
+                    className="min-h-32 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-500"
+                    placeholder="Short instructor intro, specialties, and training style."
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="instructor-image">
+                    Photo
+                  </label>
+                  <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center">
+                    <img
+                      src={instructorForm.imagePreviewUrl || '/placeholder-avatar.png'}
+                      alt={instructorForm.name || 'Instructor preview'}
+                      className="h-24 w-24 rounded-2xl object-cover shadow-sm"
+                    />
+                    <div className="flex-1">
+                      <input
+                        id="instructor-image"
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        onChange={handleInstructorImageChange}
+                        className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-xl file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-slate-800"
+                      />
+                      <p className="mt-2 text-xs text-slate-500">
+                        Upload JPG, PNG, WEBP, or GIF. The newest uploaded photo becomes the instructor profile image.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <FeedbackMessage feedback={instructorFeedback} />
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="submit"
+                    disabled={isSavingInstructor}
+                    className="inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSavingInstructor
+                      ? isEditingInstructor
+                        ? 'Saving Changes…'
+                        : 'Saving Instructor…'
+                      : isEditingInstructor
+                        ? 'Save Instructor Changes'
+                        : 'Create Instructor'}
+                  </button>
+                  {isEditingInstructor && (
+                    <button
+                      type="button"
+                      onClick={cancelInstructorEdit}
+                      className="inline-flex rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <section id="calendar" className="mt-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
@@ -1160,95 +1252,6 @@ export default function AdminDashboard({
           </section>
 
           <section className="mt-10 grid gap-6 lg:grid-cols-2">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
-                Instructor Roster
-              </p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-900">Current instructors</h2>
-
-              {instructors.length > 0 ? (
-                <ul className="mt-5 space-y-3">
-                  {instructors.map((instructor) => (
-                    <li
-                      key={instructor.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <div className="flex items-start gap-4">
-                            <img
-                              src={instructor.imageUrl || '/placeholder-avatar.png'}
-                              alt={instructor.name}
-                              className="h-16 w-16 rounded-2xl object-cover shadow-sm"
-                            />
-                            <div>
-                              <div className="font-semibold text-slate-900">{instructor.name}</div>
-                              <p className="mt-1 text-sm text-slate-500">
-                                {instructor.bio || 'No bio added yet.'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => startInstructorEdit(instructor)}
-                          className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-5 text-sm text-slate-500">No instructors added yet.</p>
-              )}
-            </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
-                Class Catalog
-              </p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-900">Current classes</h2>
-
-              {classes.length > 0 ? (
-                <ul className="mt-5 space-y-3">
-                  {classes.map((workoutClass) => (
-                    <li
-                      key={workoutClass.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <div className="font-semibold text-slate-900">{workoutClass.title}</div>
-                          <p className="mt-1 text-sm text-slate-500">
-                            {instructorNameById.get(workoutClass.instructor_id ?? '') ??
-                              'Unassigned'}{' '}
-                            · {formatStudioDayLabel(workoutClass.day_of_week)} ·{' '}
-                            {workoutClass.startTime ?? 'Time TBD'}
-                          </p>
-                        </div>
-                        <StatusPill
-                          tone="neutral"
-                          label={`${sessionsPerClass.get(workoutClass.id) ?? 0} sessions`}
-                        />
-                      </div>
-                      <div className="mt-3 flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => startClassEdit(workoutClass)}
-                          className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-5 text-sm text-slate-500">No classes created yet.</p>
-              )}
-            </div>
           </section>
         </div>
       </main>

@@ -3,6 +3,8 @@ import { getSSRClient } from '@/lib/ssrClient';
 import { supabase } from '@/lib/supabaseClient';
 import NavHeader from '@/components/NavHeader';
 import { useState } from 'react';
+// Email
+import { sendEmail } from '@/lib/email';
 
 type BookingClass = {
   title?: string | null;
@@ -63,6 +65,7 @@ export default function Dashboard({ initialBookings }: DashboardProps) {
       return;
     }
 
+    // Call cancel API
     const res = await fetch('/api/bookings/cancel', {
       method: 'POST',
       headers: {
@@ -80,6 +83,17 @@ export default function Dashboard({ initialBookings }: DashboardProps) {
             : booking
         )
       );
+
+      // Notify cancelled endpoint with user email
+      try {
+        await fetch(`/api/bookings/cancelled`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId: id, to: encodeURIComponent(session.user.email) }),
+        });
+      } catch (err) {
+        console.error('Failed to notify cancelled endpoint', err);
+      }
     } else {
       const { error } = await res.json().catch(() => ({ error: null }));
       alert(error || 'Unable to cancel this booking right now.');
